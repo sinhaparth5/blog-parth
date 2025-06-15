@@ -29,7 +29,6 @@
   @include theme-text-color($color-shark-950);
 }
 
-.posts {
   .postList {
     list-style: none;
     padding: 0;
@@ -47,15 +46,15 @@
     border-bottom: 2px solid var(--color-shark-300);
   }
 
-  .postImage {
-    width: 300px;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 8px;
-  }
-
   .postContent {
     flex: 1;
+
+    .postImageCon {
+      display: flex;
+      width: 100%;
+      justify-content: center;
+      align-items: center;
+    }
   }
 
   .postTitle {
@@ -103,7 +102,6 @@
       border-radius: 4px;
     }
   }
-}
 
 .postContent {
   .postImage {
@@ -117,6 +115,10 @@
     font-family: var(--font-primary);
     font-size: 1rem;
     line-height: 1.6;
+
+    a {
+      color: $color-stark-white-100
+    }
 
     h2 {
       font-size: 1.1rem;
