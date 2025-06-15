@@ -1,0 +1,25 @@
+{
+	"name": "blog-parth",
+	"type": "module",
+	"version": "0.0.1",
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build",
+		"preview": "astro build && wrangler dev",
+		"astro": "astro",
+		"deploy": "astro build && wrangler deploy",
+		"cf-typegen": "wrangler types"
+	},
+	"dependencies": {
+		"@astrojs/cloudflare": "^12.5.4",
+		"@astrojs/mdx": "^4.3.0",
+		"@astrojs/sitemap": "^3.4.1",
+		"@unpic/astro": "^1.0.0",
+		"astro": "^5.9.3"
+	},
+	"devDependencies": {
+		"@types/node": "^24.0.1",
+		"sass": "^1.89.2",
+		"wrangler": "^4.20.0"
+	}
+}

@@ -1,0 +1,31 @@
+---
+import styles from "../assets/styles/Home.module.scss";
+import { Image } from "@unpic/astro";
+import HomeImage from "../assets/imgs/HomeImg.jpeg";
+---
+	<header class={styles.header}>
+		<h1 class={styles.siteTitle}>Parth Sinha</h1>
+		<nav class={styles.nav}>
+			<a href="/">Home</a>
+			<a href="/blogs">Blogs</a>
+			<a href="/contact">Contact</a>
+			<a href="/about">About</a>
+		</nav>
+	</header>
+	<main class={styles.main}>
+		<section class={styles.quoteSection}>
+			<blockquote>
+				<p>"Start writing, no matter what. The water does not flow until the faucet is turned on."</p>
+				<cite>- Louis L’Amour</cite>
+			</blockquote>
+		</section>
+		<section class={styles.imageSection}>
+			<Image
+			src={HomeImage}
+			layout="constrained"
+			width={800}
+			height={600}
+			alt="Home"
+			/>
+		</section>
+	</main>
