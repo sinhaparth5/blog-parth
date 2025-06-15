@@ -1,0 +1,32 @@
+@use "./variables.scss" as *;
+
+.footer {
+    display: flex;
+    border-top: 5px double var(--color-shark-100);
+
+    .footerContent {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+
+        .footerCopyright {
+            color: $color-stark-white-100;
+
+            span {
+                font-family: $font-primary-italic;
+            }
+        }
+
+        .linkGroup {
+            display: flex;
+            gap: 1.5rem;
+
+            .socialLinks {
+                svg {
+                    fill: $color-stark-white-100;
+                }
+            }
+        }
+    }
+}
