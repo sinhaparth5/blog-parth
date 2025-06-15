@@ -1,0 +1,78 @@
+---
+// src/pages/blogs/index.astro
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import styles from '../../assets/styles/blogs.module.scss';
+import { Image } from '@unpic/astro';
+
+// Define the blog post type based on the content collection schema
+interface BlogPost {
+  title: string;
+  description: string;
+  pubDate: Date;
+  image?: string;
+  tags?: string[];
+}
+
+// Fetch all blog posts
+const posts = await getCollection('blog') as CollectionEntry<'blog'>[];
+// Sort posts by pubDate in descending order (newest first)
+posts.sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+
+---
+
+<Layout
+  title="Blog"
+  description="Explore all blog posts on various topics."
+  keywords={['blog', 'articles', 'tutorials']}
+  type="website"
+  canonicalURL="https://blogs.parthsinha.com/blogs"
+>
+  <header class={styles.header}>
+    <h1 class={styles.pageTitle}>Blogs</h1>
+  </header>
+
+  <main class={styles.main}>
+    <section class={styles.posts}>
+      {posts.length === 0 ? (
+        <p>No posts found.</p>
+      ) : (
+        <ul class={styles.postList}>
+          {posts.map((post: CollectionEntry<'blog'>) => (
+            <li class={styles.postItem}>
+              {post.data.image && (
+                <Image
+                  src={post.data.image}
+                  alt={post.data.title}
+                  width={300}
+                  height={200}
+                  class={styles.postImage}
+                />
+              )}
+              <div class={styles.postContent}>
+                <h2 class={styles.postTitle}>
+                  <a href={`/blogs/${post.slug}`}>{post.data.title}</a>
+                </h2>
+                <p class={styles.postMeta}>
+                  Published on {post.data.pubDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </p>
+                <p class={styles.postExcerpt}>{post.data.description}</p>
+                {post.data.tags && (
+                  <ul class={styles.postTags}>
+                    {post.data.tags.map((tag: string) => (
+                      <li class={styles.tag}>{tag}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  </main>
+</Layout>
