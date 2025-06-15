@@ -60,13 +60,6 @@ posts.sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
                   })}
                 </p>
                 <p class={styles.postExcerpt}>{post.data.description}</p>
-                {post.data.tags && (
-                  <ul class={styles.postTags}>
-                    {post.data.tags.map((tag: string) => (
-                      <li class={styles.tag}>{tag}</li>
-                    ))}
-                  </ul>
-                )}
               </div>
             </li>
           ))}

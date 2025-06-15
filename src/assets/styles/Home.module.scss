@@ -87,12 +87,14 @@
 // Responsive design
 @media (max-width: 768px) {
   .header {
+    flex-direction: column;
+
     .siteTitle {
       font-size: 2rem;
     }
 
     .nav {
-      flex-direction: column;
+      flex-direction: row;
       gap: 0.75rem;
     }
   }
