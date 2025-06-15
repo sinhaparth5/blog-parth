@@ -54,6 +54,7 @@ const { Content } = await post.render();
   <main class={styles.main}>
     <article class={styles.postContent}>
       {post.data.image && (
+        <div class={styles.postImageCon}>
         <Image
           src={post.data.image}
           alt={post.data.title}
@@ -61,6 +62,7 @@ const { Content } = await post.render();
           height="400"
           class={styles.postImage}
         />
+        </div>
       )}
       <div class={styles.postBody} id="post-content">
         <Content />
