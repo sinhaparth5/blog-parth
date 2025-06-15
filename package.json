@@ -14,11 +14,11 @@
 		"@astrojs/cloudflare": "^12.5.4",
 		"@astrojs/mdx": "^4.3.0",
 		"@astrojs/sitemap": "^3.4.1",
-		"@unpic/astro": "^1.0.0",
 		"astro": "^5.9.3"
 	},
 	"devDependencies": {
 		"@types/node": "^24.0.1",
+		"autoprefixer": "^10.4.21",
 		"sass": "^1.89.2",
 		"wrangler": "^4.20.0"
 	}
