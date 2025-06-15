@@ -1,0 +1,19 @@
+---
+export interface Props {
+  formula: string;
+  display?: boolean;
+}
+
+const { formula, display = false } = Astro.props;
+const delimiters = display ? '$$' : '$';
+---
+
+<span class="latex-formula" data-formula={formula}>
+  {delimiters}{formula}{delimiters}
+</span>
+
+<style>
+  .latex-formula {
+    white-space: nowrap;
+  }
+</style>
