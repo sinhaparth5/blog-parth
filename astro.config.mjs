@@ -10,6 +10,7 @@ import { imageService } from '@unpic/astro/service';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://blogs.parthsinha.com',
   output: "server",
   adapter: cloudflare({
     platformProxy: {
