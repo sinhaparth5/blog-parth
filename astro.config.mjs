@@ -21,8 +21,8 @@ export default defineConfig({
   integrations: [sitemap(), mdx({ extendMarkdownConfig: true })],
   markdown: {
     shikiConfig: {
-      theme: 'github-dark',
-      wrap: true
+      theme: 'dracula',
+      wrap: true,
     }
   },
   vite: {
