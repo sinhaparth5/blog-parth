@@ -3,6 +3,7 @@
 .footer {
     display: flex;
     border-top: 5px double var(--color-shark-100);
+    padding: 0.5rem 0;
 
     .footerContent {
         display: flex;
@@ -23,6 +24,9 @@
             gap: 1.5rem;
 
             .socialLinks {
+                display: flex;
+                gap: 1.5rem;
+
                 svg {
                     fill: $color-stark-white-100;
                 }
