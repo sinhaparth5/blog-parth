@@ -1,9 +1,9 @@
 ---
-// src/pages/blogs/[...slug].astro
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import styles from '../../assets/styles/blogs.module.scss'
 import { Image } from 'astro:assets';
+export const prerender = true;
 
 // Define static paths for all blog posts
 export async function getStaticPaths() {
