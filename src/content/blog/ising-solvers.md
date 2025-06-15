@@ -1,6 +1,6 @@
 ---
 title: Unpacking Multi-Digit Ising Mapping for Ising Solvers
-description: A sample blog post with LaTeX and Markdown content.
+description: Explore how multi-digit Ising mappings enhance low-precision solver performance with a Python implementation and visual insights.
 pubDate: 2025-06-15
 image: /blogs-img/ising-solvers/ising-solvers.jpeg
 tags: [mathematics, pythics]
@@ -81,23 +81,37 @@ This trick lets low-precision hardware act like it’s high-precision. For MIMO 
 ```python
 # Simulated Annealing: Our fake Ising solver
 def simulated_annealing(J, num_spins, num_steps=10000, T_start=10.0, T_end=0.01):
-    spins = np.random.choice([-1, 1], num_spins)  # Start with random spins
-    energy = -sum(J[i, j] * spins[i] * spins[j] for i in range(num_spins) 
-                  for j in range(i + 1, num_spins))
+    spins = np.random.choice([-1, 1], num_spins)
+    
+    def calculate_energy(spins, J):
+        energy = 0
+        for i in range(len(spins)):
+            for j in range(i + 1, len(spins)):
+                energy -= J[i, j] * spins[i] * spins[j]
+        return energy
+    
+    energy = calculate_energy(spins, J)
     energies = [energy]
     
-    T = T_start
     for step in range(num_steps):
-        T = T_start * (T_end / T_start) ** (step / num_steps)  # Cool down
-        i = np.random.randint(num_spins)
-        spins[i] *= -1  # Flip a spin
-        new_energy = -sum(J[i, j] * spins[i] * spins[j] for i in range(num_spins) 
-                          for j in range(i + 1, num_spins))
+        # Exponential cooling schedule
+        T = T_start * (T_end / T_start) ** (step / num_steps)
         
-        if new_energy < energy or np.random.rand() < np.exp((energy - new_energy) / T):
+        # Flip a random spin
+        i = np.random.randint(num_spins)
+        old_spin = spins[i]
+        spins[i] *= -1
+        
+        # Calculate new energy
+        new_energy = calculate_energy(spins, J)
+        delta_E = new_energy - energy
+        
+        # Accept or reject the move
+        if delta_E < 0 or np.random.rand() < np.exp(-delta_E / T):
             energy = new_energy
         else:
-            spins[i] *= -1  # Undo flip
+            spins[i] = old_spin  # Revert the flip
+            
         energies.append(energy)
     
     return spins, energy, energies
@@ -109,10 +123,11 @@ def simulated_annealing(J, num_spins, num_steps=10000, T_start=10.0, T_end=0.01)
 def native_mapping(J, C_max=7):
     K = np.zeros_like(J)
     for i in range(len(J)):
-        for j in range(i + 1, len(J)):
-            total = J[i, j] + J[j, i]
-            K[i, j] = np.ceil(C_max * total / 2)
-            K[j, i] = np.floor(C_max * total / 2)
+        for j in range(len(J)):
+            if i != j:
+                # Scale and round to nearest integer within [-C_max, C_max]
+                scaled = J[i, j] * C_max
+                K[i, j] = np.clip(np.round(scaled), -C_max, C_max)
     return K
 ```
 
@@ -121,45 +136,37 @@ def native_mapping(J, C_max=7):
 ```python
 # 2-Digit Mapping: More precision with spin copies
 def two_digit_mapping(J, q=5, C_max=7):
-    M_q = (q - 1) * (q + 1)  # e.g., 24 for q=5
+    M_q = (q - 1) * (q + 1)  # Maximum representable value
     num_spins = len(J)
-    new_spins = num_spins * (q + 1)  # Original + q copies per spin
+    new_spins = num_spins * (q + 1)
     K_prime = np.zeros((new_spins, new_spins))
     
     for i in range(num_spins):
-        for j in range(i + 1, num_spins):
-            total = J[i, j] + J[j, i]
-            K_ij_prime = np.round(M_q * total / 2)
-            f_ij = np.floor(K_ij_prime / q)
-            g_ij = K_ij_prime - q * f_ij
-            sign = np.sign(K_ij_prime)
-            f_ij, g_ij = sign * f_ij, sign * g_ij
-            
-            # Find best alpha, beta, gamma to minimize spin copies
-            min_copies = float('inf')
-            best_params = None
-            for alpha in range(-(q-1), q):
-                if alpha == 0:
-                    continue
-                for beta in range(1, q):
-                    gamma = (q * f_ij) / (alpha * beta)
-                    if gamma.is_integer() and abs(gamma) <= q and abs(alpha) <= C_max:
-                        copies = max(beta, abs(gamma))
-                        if copies < min_copies:
-                            min_copies = copies
-                            best_params = (alpha, beta, gamma)
-            
-            if best_params:
-                alpha, beta, gamma = best_params
-                for k in range(int(beta)):
-                    for l in range(int(abs(gamma))):
-                        K_prime[i * (q + 1) + k + 1, j * (q + 1) + l + 1] = alpha * np.sign(gamma)
-                K_prime[i * (q + 1), j * (q + 1)] = g_ij - f_ij
-            
-            # Penalty terms to keep spin copies aligned
-            for k in range(1, q + 1):
-                K_prime[i * (q + 1), i * (q + 1) + k] = -C_max
-                K_prime[j * (q + 1), j * (q + 1) + k] = -C_max
+        for j in range(num_spins):
+            if i != j:
+                # Quantize the coupling to the available precision
+                J_ij = J[i, j]
+                quantized = np.round(J_ij * M_q) / M_q
+                
+                # Decompose into integer and fractional parts
+                integer_part = int(quantized * q)
+                fractional_part = quantized - integer_part / q
+                
+                # Map to auxiliary spins
+                # Original spin interactions
+                K_prime[i * (q + 1), j * (q + 1)] = fractional_part
+                
+                # Auxiliary spin interactions for integer part
+                if integer_part != 0:
+                    for k in range(1, min(abs(integer_part) + 1, q + 1)):
+                        K_prime[i * (q + 1) + k, j * (q + 1)] = np.sign(integer_part) / q
+        
+        # Add penalty terms to ensure auxiliary spins behave correctly
+        penalty = -C_max / M_q
+        for k in range(1, q + 1):
+            K_prime[i * (q + 1), i * (q + 1) + k] = penalty
+            for l in range(k + 1, q + 1):
+                K_prime[i * (q + 1) + k, i * (q + 1) + l] = penalty
     
     return K_prime
 ```
@@ -169,36 +176,48 @@ def two_digit_mapping(J, q=5, C_max=7):
 ```python
 # 3-Digit Mapping: Even more precision
 def three_digit_mapping(J, q=5, C_max=7):
-    M_q = (q - 1) * (q**2 + q + 1)  # e.g., 124 for q=5
+    M_q = (q - 1) * (q**2 + q + 1)  # Maximum representable value
     num_spins = len(J)
     new_spins = num_spins * (q + 1)
     K_prime = np.zeros((new_spins, new_spins))
     
     for i in range(num_spins):
-        for j in range(i + 1, num_spins):
-            total = J[i, j] + J[j, i]
-            K_ij_prime = np.round(M_q * total / 2)
-            e_ij = np.floor(K_ij_prime / q**2)
-            f_ij = nproya floor((K_ij_prime - e_ij * q**2) / q)
-            g_ij = K_ij_prime - e_ij * q**2 - f_ij * q
-            sign = np.sign(K_ij_prime)
-            e_ij, f_ij, g_ij = sign * e_ij, sign * f_ij, sign * g_ij
-            a_ij, b_ij, c_ij = e_ij, f_ij, g_ij
-            
-            # Map the terms
-            for k in range(1, q + 1):
-                for l in range(1, q + 1):
-                    K_prime[i * (q + 1) + k, j * (q + 1) + l] = -a_ij
-                K_prime[i * (q + 1) + k, j * (q + 1)] = -b_ij
-            K_prime[i * (q + 1), j * (q + 1)] = -c_ij
-            
-            # Penalty terms
-            for k in range(1, q + 1):
-                K_prime[i * (q + 1), i * (q + 1) + k] = -C_max
-                K_prime[j * (q + 1), j * (q + 1) + k] = -C_max
-                for l in range(1, q + 1):
-                    K_prime[i * (q + 1) + k, i * (q + 1) + l] = -C_max
-                    K_prime[j * (q + 1) + k, j * (q + 1) + l] = -C_max
+        for j in range(num_spins):
+            if i != j:
+                # Quantize the coupling
+                J_ij = J[i, j]
+                quantized = np.round(J_ij * M_q) / M_q
+                
+                # Three-digit decomposition: a*q^2 + b*q + c
+                temp = quantized * M_q
+                a = int(temp // (q**2))
+                b = int((temp % (q**2)) // q)
+                c = temp % q
+                
+                # Normalize back
+                a_coeff = a / M_q
+                b_coeff = b / M_q
+                c_coeff = c / M_q
+                
+                # Map to interaction matrix
+                K_prime[i * (q + 1), j * (q + 1)] = c_coeff
+                
+                # Higher order terms
+                if a != 0:
+                    for k in range(1, min(abs(a) + 1, q + 1)):
+                        for l in range(1, min(abs(a) + 1, q + 1)):
+                            K_prime[i * (q + 1) + k, j * (q + 1) + l] = np.sign(a) * a_coeff / (q**2)
+                
+                if b != 0:
+                    for k in range(1, min(abs(b) + 1, q + 1)):
+                        K_prime[i * (q + 1) + k, j * (q + 1)] = np.sign(b) * b_coeff / q
+        
+        # Add penalty terms
+        penalty = -C_max / M_q
+        for k in range(1, q + 1):
+            K_prime[i * (q + 1), i * (q + 1) + k] = penalty
+            for l in range(k + 1, q + 1):
+                K_prime[i * (q + 1) + k, i * (q + 1) + l] = penalty
     
     return K_prime
 ```
@@ -206,6 +225,8 @@ def three_digit_mapping(J, q=5, C_max=7):
 **3-Digit Mapping**: This cranks it up a notch, allowing couplings up to 124 in base-5. We break a coupling into three parts (e.g., $100 = 5^2 \cdot 4 + 5 \cdot 0 + 0$) and use more spin copies. It’s more complex and needs more spins, but it’s super precise. The penalty terms are beefier to keep all the copies in line.
 
 **Main Experiment**: We set up a tiny problem with 2 spins, run all three mappings, and use simulated annealing to find the best spin setup. We plot how the energy drops over time and print the final energies.
+
+![Complex Number on graph 1](/blogs-img/ising-solvers/ising_mappings_plot.png)
 
 **The Plot**: The graph shows how the energy decreases for each mapping. Lower energy means a better solution. You’ll likely see the 3-digit mapping hitting the lowest energy, followed by 2-digit, then native, because they can represent the original problem more accurately.
 
@@ -215,3 +236,5 @@ Singh and Jamieson’s multi-digit mapping is like giving your old smartphone a 
 #### Thanks to: 
 Abhishek Kumar Singh and Kyle Jamieson for this awesome idea. Their paper (arXiv:2404.05631v1) is a must-read if you’re into optimization or hardware hacks.
 
+### APENDIX
+GILAB LINK: https://gitlab.com/sinhaparth5/ising-solvers.git
