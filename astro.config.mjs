@@ -21,7 +21,13 @@ export default defineConfig({
   image: {
     service: imageService(),
   },
-  integrations: [sitemap(), mdx()],
+  integrations: [sitemap(), mdx({ extendMarkdownConfig: true })],
+  markdown: {
+    shikiConfig: {
+      theme: 'github-dark',
+      wrap: true
+    }
+  },
   vite: {
     css: {
       preprocessorOptions: {
