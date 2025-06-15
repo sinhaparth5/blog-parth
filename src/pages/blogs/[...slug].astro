@@ -3,6 +3,7 @@
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import styles from '../../assets/styles/blogs.module.scss'
+import { Image } from 'astro:assets';
 
 // Define static paths for all blog posts
 export async function getStaticPaths() {
@@ -53,7 +54,7 @@ const { Content } = await post.render();
   <main class={styles.main}>
     <article class={styles.postContent}>
       {post.data.image && (
-        <img
+        <Image
           src={post.data.image}
           alt={post.data.title}
           width="600"

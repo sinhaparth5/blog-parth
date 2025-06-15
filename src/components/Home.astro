@@ -1,7 +1,6 @@
 ---
 import styles from "../assets/styles/Home.module.scss";
-import { Image } from "@unpic/astro";
-import HomeImage from "../assets/imgs/HomeImg.jpeg";
+import { Image } from "astro:assets";
 ---
 	<main class={styles.main}>
 		<section class={styles.quoteSection}>
@@ -12,8 +11,7 @@ import HomeImage from "../assets/imgs/HomeImg.jpeg";
 		</section>
 		<section class={styles.imageSection}>
 			<Image
-			src={HomeImage}
-			layout="constrained"
+			src="/HomeImg.jpeg"
 			width={800}
 			height={600}
 			alt="Home"
